@@ -21,20 +21,20 @@ elif [[ "$ACTION" != "install" ]]; then
 fi
 
 # اگر install انتخاب شده بود ادامه بده:
-read -p "🔐 توکن ربات تلگرام: " BOT_TOKEN
-read -p "🆔 آیدی عددی ادمین: " ADMIN_ID
+read -p "🔐 Telegram Bot Token : " BOT_TOKEN
+read -p "🆔 Admin numeric ID: " ADMIN_ID
 
-echo "📦 در حال نصب وابستگی‌ها..."
+echo "📦 Installing dependencies..."
 apt update -y && apt install -y python3 python3-pip python3-venv curl
 
-echo "🧪 ساخت محیط مجازی..."
+echo "🧪 Creating a virtual environment..."
 cd /root
 python3 -m venv venv_bot
 source /root/venv_bot/bin/activate
 pip install --upgrade pip
 pip install python-telegram-bot
 
-echo "📝 ساخت فایل /root/vpn_bot.py..."
+echo "📝 File creation /root/vpn_bot.py..."
 cat > /root/vpn_bot.py <<EOF
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
