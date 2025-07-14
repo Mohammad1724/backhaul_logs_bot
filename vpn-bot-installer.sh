@@ -43,7 +43,8 @@ BOT_TOKEN = "$BOT_TOKEN"
 ADMIN_ID = $ADMIN_ID
 
 main_keyboard = ReplyKeyboardMarkup(
-    [["🔄 ریستارت بک‌هال"], ["📊 وضعیت بک‌هال"], ["🧠 منابع سرور"], ["📶 پینگ"], ["❌ حذف ربات"]],
+    [["🔄 ریستارت بک‌هال"], ["📊 وضعیت بک‌هال"], ["⏱ آپتایم سرور"], ["📶 پینگ"], ["❌ حذف ربات"],
+  ["🚨 آخرین خطای بکهال"]],
     resize_keyboard=True
 )
 
@@ -72,12 +73,20 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             subprocess.run(["journalctl", "-u", "backhaul", "--no-pager", "-n", "100"], stdout=f)
         with open(log_file, "rb") as f:
             await context.bot.send_document(chat_id=ADMIN_ID, document=f, filename="backhaul_status.log", caption="📄 وضعیت بک‌هال (آخرین ۱۰۰ خط لاگ):")
-    elif text == "🧠 منابع سرور":
-        result = subprocess.run(["top", "-b", "-n", "1"], capture_output=True, text=True)
-        await update.message.reply_text(f"📊 منابع سرور:\n\n{result.stdout[:4000]}")
     elif text == "📶 پینگ":
         result = subprocess.run(["ping", "-c", "4", "1.1.1.1"], capture_output=True, text=True)
         await update.message.reply_text(f"📶 نتیجه پینگ:\n\n{result.stdout[:4000]}")
+        elif text == "⏱ آپتایم سرور":
+    uptime = subprocess.run(["uptime", "-p"], capture_output=True, text=True)
+    await update.message.reply_text(f"⏱ آپتایم سرور:\n{uptime.stdout.strip()}")
+
+elif text == "🚨 آخرین خطای بکهال":
+    log_file = "/root/backhaul.json"  # اگر لاگ جای دیگه‌ست مسیرشو تغییر بده
+    last_error = subprocess.run(['grep', '-E', 'ERROR|WARN', log_file], capture_output=True, text=True)
+    if last_error.stdout:
+        await update.message.reply_text(f"🚨 آخرین خطای ثبت‌شده:\n\n{last_error.stdout.strip().splitlines()[-1]}")
+    else:
+        await update.message.reply_text("✅ هیچ خطایی در لاگ پیدا نشد.")
     elif text == "❌ حذف ربات":
         await update.message.reply_text("♻️ ربات در حال حذف از سیستم است...")
         subprocess.run(["systemctl", "stop", "vpn_bot"])
