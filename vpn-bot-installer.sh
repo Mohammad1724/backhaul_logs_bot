@@ -127,4 +127,4 @@ systemctl daemon-reload
 systemctl enable vpn_bot
 systemctl restart vpn_bot
 
-echo "✅ ربات با موفقیت نصب و اجرا شد!"
+echo "✅ The robot was successfully installed and running.!"
