@@ -209,4 +209,4 @@ systemctl daemon-reload
 systemctl enable vpn_bot
 systemctl restart vpn_bot
 
-echo "✅ The bot was successfully installed and started!"
+echo "✅ The bot was successfully installed and started"
