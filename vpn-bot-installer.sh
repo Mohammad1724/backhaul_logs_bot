@@ -1,21 +1,21 @@
 #!/bin/bash
 
-echo "🔧 شروع نصب ربات بک‌هال تلگرام..."
+echo "🔧 Start installing Riba"
 
-read -p "🔐 توکن ربات تلگرام رو وارد کن: " BOT_TOKEN
-read -p "👤 آیدی عددی تلگرام مدیر (Admin ID): " ADMIN_ID
+read -p "🔐 Telegram Bot Token: " BOT_TOKEN
+read -p " Numeric ID (Admin ID): " ADMIN_ID
 
-echo "📦 نصب Python و ابزارهای لازم..."
+echo "📦   Installing the necessary Python tools  ..."
 apt update -y && apt install -y python3 python3-pip python3-venv curl
 
-echo "🧪 ساخت محیط مجازی..."
+echo "🧪 Creating a virtual environment   ..."
 cd /root
 python3 -m venv venv_bot
 source /root/venv_bot/bin/activate
 pip install --upgrade pip
 pip install python-telegram-bot
 
-echo "📝 ساخت فایل vpn_bot.py..."
+echo "📝 Construction File creation  vpn_bot.py..."
 cat > /root/vpn_bot.py <<EOF
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
@@ -67,7 +67,7 @@ if __name__ == '__main__':
     app.run_polling()
 EOF
 
-echo "⚙️ ساخت سرویس systemd..."
+echo "⚙️ Service creation systemd..."
 cat > /etc/systemd/system/vpn_bot.service <<EOF
 [Unit]
 Description=VPN Telegram Bot
