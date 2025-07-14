@@ -43,7 +43,7 @@ BOT_TOKEN = "$BOT_TOKEN"
 ADMIN_ID = $ADMIN_ID
 
 main_keyboard = ReplyKeyboardMarkup(
-    [["🔄 ریستارت"], ["📊 وضعیت"], ["🧠 منابع سرور"], ["📶 پینگ"], ["❌ حذف ربات"]],
+    [["🔄 ریستارت بک‌هال"], ["📊 وضعیت بک‌هال"], ["🧠 منابع سرور"], ["📶 پینگ"], ["❌ حذف ربات"]],
     resize_keyboard=True
 )
 
