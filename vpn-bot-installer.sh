@@ -63,9 +63,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     elif text == "🧠 منابع سرور":
         result = subprocess.run(["top", "-b", "-n", "1"], capture_output=True, text=True)
-        await update.message.reply_text(f"📊 منابع سرور:
-
-{result.stdout[:4000]}")
+        await update.message.reply_text(f"📊 منابع سرور:\n\n{result.stdout[:4000]}")
 
     elif text == "🌐 تست اتصال دامنه":
         await update.message.reply_text("لطفاً آدرس دامنه را ارسال کن:")
