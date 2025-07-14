@@ -1,4 +1,6 @@
-echo " MOHAMMADREZA MORADI "
+#!/bin/bash
+
+echo "MOHAMMADREZA MORADI"
 echo "==============================="
 echo " VPN Bot Installation Manager"
 echo "==============================="
@@ -20,8 +22,7 @@ elif [ "$choice" != "1" ]; then
     exit 1
 fi
 
-# اگر install انتخاب شده بود ادامه بده:
-read -p "🔐 Telegram Bot Token : " BOT_TOKEN
+read -p "🔐 Telegram Bot Token: " BOT_TOKEN
 read -p "🆔 Admin numeric ID: " ADMIN_ID
 
 echo "📦 Installing dependencies..."
@@ -34,7 +35,7 @@ source /root/venv_bot/bin/activate
 pip install --upgrade pip
 pip install python-telegram-bot
 
-echo "📝 File creation /root/vpn_bot.py..."
+echo "📝 Creating /root/vpn_bot.py..."
 cat > /root/vpn_bot.py <<EOF
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
@@ -44,8 +45,7 @@ BOT_TOKEN = "$BOT_TOKEN"
 ADMIN_ID = $ADMIN_ID
 
 main_keyboard = ReplyKeyboardMarkup(
-    [["🔄 ریستارت بک‌هال"], ["📊 وضعیت بک‌هال"], ["⏱ آپتایم سرور"], ["📶 پینگ"], ["❌ حذف ربات"],
-  ["🚨 آخرین خطای بکهال"]],
+    [["🔄 ریستارت بک‌هال"], ["📊 وضعیت بک‌هال"], ["⏱ آپتایم سرور"], ["📶 پینگ"], ["🚨 آخرین خطای بکهال"], ["❌ حذف ربات"]],
     resize_keyboard=True
 )
 
@@ -59,7 +59,9 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != ADMIN_ID:
         await update.message.reply_text("⛔ شما اجازه استفاده ندارید.")
         return
+
     text = update.message.text
+
     if text == "🔄 ریستارت بک‌هال":
         restart = subprocess.run(["systemctl", "restart", "backhaul"], capture_output=True)
         if restart.returncode == 0:
@@ -68,26 +70,30 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text("✅ بک‌هال ریستارت شد.\n📄 وضعیت:\n\n" + status_text[:4000])
         else:
             await update.message.reply_text("❌ خطا در ریستارت:\n" + restart.stderr.decode())
+
     elif text == "📊 وضعیت بک‌هال":
         log_file = "/tmp/backhaul_status.log"
         with open(log_file, "w") as f:
             subprocess.run(["journalctl", "-u", "backhaul", "--no-pager", "-n", "100"], stdout=f)
         with open(log_file, "rb") as f:
             await context.bot.send_document(chat_id=ADMIN_ID, document=f, filename="backhaul_status.log", caption="📄 وضعیت بک‌هال (آخرین ۱۰۰ خط لاگ):")
+
+    elif text == "⏱ آپتایم سرور":
+        uptime = subprocess.run(["uptime", "-p"], capture_output=True, text=True)
+        await update.message.reply_text(f"⏱ آپتایم سرور:\n{uptime.stdout.strip()}")
+
     elif text == "📶 پینگ":
         result = subprocess.run(["ping", "-c", "4", "1.1.1.1"], capture_output=True, text=True)
         await update.message.reply_text(f"📶 نتیجه پینگ:\n\n{result.stdout[:4000]}")
-        elif text == "⏱ آپتایم سرور":
-    uptime = subprocess.run(["uptime", "-p"], capture_output=True, text=True)
-    await update.message.reply_text(f"⏱ آپتایم سرور:\n{uptime.stdout.strip()}")
 
-     elif text == "🚨 آخرین خطای بکهال":
-    log_file = "/root/backhaul.json"  # اگر لاگ جای دیگه‌ست مسیرشو تغییر بده
-    last_error = subprocess.run(['grep', '-E', 'ERROR|WARN', log_file], capture_output=True, text=True)
-    if last_error.stdout:
-        await update.message.reply_text(f"🚨 آخرین خطای ثبت‌شده:\n\n{last_error.stdout.strip().splitlines()[-1]}")
-    else:
-        await update.message.reply_text("✅ هیچ خطایی در لاگ پیدا نشد.")
+    elif text == "🚨 آخرین خطای بکهال":
+        log_file = "/root/backhaul.json"
+        last_error = subprocess.run(['grep', '-E', 'ERROR|WARN', log_file], capture_output=True, text=True)
+        if last_error.stdout:
+            await update.message.reply_text(f"🚨 آخرین خطای ثبت‌شده:\n\n{last_error.stdout.strip().splitlines()[-1]}")
+        else:
+            await update.message.reply_text("✅ هیچ خطایی در لاگ پیدا نشد.")
+
     elif text == "❌ حذف ربات":
         await update.message.reply_text("♻️ ربات در حال حذف از سیستم است...")
         subprocess.run(["systemctl", "stop", "vpn_bot"])
@@ -97,6 +103,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         subprocess.run(["rm", "-rf", "/root/venv_bot"])
         subprocess.run(["systemctl", "daemon-reload"])
         await update.message.reply_text("✅ ربات حذف شد. برای نصب مجدد اسکریپت را دوباره اجرا کنید.")
+
     else:
         await update.message.reply_text("❓ دستور ناشناخته. لطفاً از دکمه‌ها استفاده کن.")
 
@@ -108,7 +115,7 @@ if __name__ == '__main__':
     app.run_polling()
 EOF
 
-echo "⚙️ Service creation systemd..."
+echo "⚙️ Creating systemd service..."
 cat > /etc/systemd/system/vpn_bot.service <<EOF
 [Unit]
 Description=VPN Telegram Bot
@@ -128,4 +135,4 @@ systemctl daemon-reload
 systemctl enable vpn_bot
 systemctl restart vpn_bot
 
-echo "✅ The robot was successfully installed and running.!"
+echo "✅ The bot was successfully installed and started!"
