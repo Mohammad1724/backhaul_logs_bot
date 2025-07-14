@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "MOHAMMADREZA MORADI"
+echo "MOHAMMAD REZA MORADI"
 echo "==============================="
 echo " VPN Bot Installation Manager"
 echo "==============================="
@@ -87,12 +87,15 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"📶 نتیجه پینگ:\n\n{result.stdout[:4000]}")
 
     elif text == "🚨 آخرین خطای بکهال":
-        log_file = "/root/backhaul.json"
-        last_error = subprocess.run(['grep', '-E', 'ERROR|WARN', log_file], capture_output=True, text=True)
-        if last_error.stdout:
-            await update.message.reply_text(f"🚨 آخرین خطای ثبت‌شده:\n\n{last_error.stdout.strip().splitlines()[-1]}")
-        else:
-            await update.message.reply_text("✅ هیچ خطایی در لاگ پیدا نشد.")
+    cmd = ["journalctl", "-u", "backhaul", "--no-pager", "-n", "200", "--since", "2h"]
+    log_output = subprocess.run(cmd, capture_output=True, text=True)
+    lines = log_output.stdout.splitlines()
+    error_lines = [line for line in lines if "ERROR" in line or "WARN" in line]
+
+    if error_lines:
+        await update.message.reply_text(f"🚨 آخرین خطای بک‌هال:\n\n{error_lines[-1]}")
+    else:
+        await update.message.reply_text("✅ هیچ خطایی در ۲ ساعت اخیر لاگ سیستم پیدا نشد.")
 
     elif text == "❌ حذف ربات":
         await update.message.reply_text("♻️ ربات در حال حذف از سیستم است...")
