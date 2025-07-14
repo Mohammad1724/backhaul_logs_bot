@@ -74,9 +74,9 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif text == "📊 وضعیت بک‌هال":
         log_file = "/tmp/backhaul_status.log"
         with open(log_file, "w") as f:
-            subprocess.run(["journalctl", "-u", "backhaul", "--no-pager", "-n", "100"], stdout=f)
+            subprocess.run(["journalctl", "-u", "backhaul", "--no-pager", "-n", "20"], stdout=f)
         with open(log_file, "rb") as f:
-            await context.bot.send_document(chat_id=ADMIN_ID, document=f, filename="backhaul_status.log", caption="📄 وضعیت بک‌هال (آخرین ۱۰۰ خط لاگ):")
+            await context.bot.send_document(chat_id=ADMIN_ID, document=f, filename="backhaul_status.log", caption="📄 وضعیت بک‌هال (آخرین ۲۰ خط لاگ):")
 
     elif text == "⏱ آپتایم سرور":
         uptime = subprocess.run(["uptime", "-p"], capture_output=True, text=True)
