@@ -70,8 +70,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     elif text.startswith("http"):
         ping = subprocess.run(["ping", "-c", "3", text], capture_output=True, text=True)
-        await update.message.reply_text(f"نتیجه پینگ:
-{ping.stdout or ping.stderr}")
+        await update.message.reply_text(f"📶 نتیجه پینگ:\n\n{result.stdout[:4000]}")
 
     elif text == "📶 پینگ":
         ping = subprocess.run(["ping", "-c", "4", "8.8.8.8"], capture_output=True, text=True)
