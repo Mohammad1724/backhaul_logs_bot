@@ -1,22 +1,21 @@
-#!/bin/bash
+echo "==============================="
+echo " VPN Bot Installation Manager"
+echo "==============================="
+echo "1) Install"
+echo "2) Remove"
+read -p "Choose an option (1 or 2): " choice
 
-echo "🚀 VPN Bot Installer & Remover"
-echo "=============================="
-
-read -p "install-1 or Uninstall-2 ? (1/2): " ACTION
-
-if [[ "$ACTION" == "2" ]]; then
-    echo "🧹در حال حذف ربات..."
+if [ "$choice" == "2" ]; then
+    echo "Removing bot..."
     systemctl stop vpn_bot
     systemctl disable vpn_bot
     rm -f /etc/systemd/system/vpn_bot.service
-    rm -f /root/vpn_bot.py
-    rm -rf /root/venv_bot
-    systemctl daemon-reload
-    echo "✅ ربات با موفقیت حذف شد."
+    rm -rf /root/venv_bot /root/vpn_bot.py
+    systemctl daemon-reexec
+    echo "✅ Bot removed successfully."
     exit 0
-elif [[ "$ACTION" != "1" ]]; then
-    echo "⛔ ورودی نامعتبر! فقط install یا remove را وارد کن."
+elif [ "$choice" != "1" ]; then
+    echo "❌ Invalid option. Exiting."
     exit 1
 fi
 
