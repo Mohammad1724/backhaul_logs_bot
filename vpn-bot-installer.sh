@@ -5,7 +5,7 @@ echo "=============================="
 
 read -p "install-1 or Uninstall-2 ? (1/2): " ACTION
 
-if [[ "$ACTION" == "remove" ]]; then
+if [[ "$ACTION" == "2" ]]; then
     echo "🧹 در حال حذف ربات..."
     systemctl stop vpn_bot
     systemctl disable vpn_bot
@@ -15,7 +15,7 @@ if [[ "$ACTION" == "remove" ]]; then
     systemctl daemon-reload
     echo "✅ ربات با موفقیت حذف شد."
     exit 0
-elif [[ "$ACTION" != "install" ]]; then
+elif [[ "$ACTION" != "1" ]]; then
     echo "⛔ ورودی نامعتبر! فقط install یا remove را وارد کن."
     exit 1
 fi
