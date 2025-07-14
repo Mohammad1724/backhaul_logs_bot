@@ -3,7 +3,7 @@
 echo "🚀 VPN Bot Installer & Remover"
 echo "=============================="
 
-read -p "Uninstall or install? (install/remove): " ACTION
+read -p "install-1 or Uninstall-2 ? (1/2): " ACTION
 
 if [[ "$ACTION" == "remove" ]]; then
     echo "🧹 در حال حذف ربات..."
