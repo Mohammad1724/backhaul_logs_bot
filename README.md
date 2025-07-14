@@ -1,4 +1,5 @@
-# backhaul_logs_bot
+# vpn-bot-installer.sh
+
 
 ربات مانیتورینگ لحظه‌ای تانل بکهال روی تلگرام 
 اسکریپت نصب 
