@@ -81,7 +81,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     uptime = subprocess.run(["uptime", "-p"], capture_output=True, text=True)
     await update.message.reply_text(f"⏱ آپتایم سرور:\n{uptime.stdout.strip()}")
 
-elif text == "🚨 آخرین خطای بکهال":
+     elif text == "🚨 آخرین خطای بکهال":
     log_file = "/root/backhaul.json"  # اگر لاگ جای دیگه‌ست مسیرشو تغییر بده
     last_error = subprocess.run(['grep', '-E', 'ERROR|WARN', log_file], capture_output=True, text=True)
     if last_error.stdout:
