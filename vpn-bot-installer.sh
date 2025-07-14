@@ -98,7 +98,7 @@ if __name__ == '__main__':
     app.run_polling()
 EOF
 
-echo "⚙️ ساخت سرویس systemd..."
+echo "⚙️ Service creation systemd..."
 cat > /etc/systemd/system/vpn_bot.service <<EOF
 [Unit]
 Description=VPN Telegram Bot
