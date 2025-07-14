@@ -146,6 +146,49 @@ if __name__ == '__main__':
     app.run_polling()
 EOF
 
+echo "📝 Creating /root/monitor_backhaul.sh..."
+cat > /root/monitor_backhaul.sh <<'EOM'
+#!/bin/bash
+
+BOT_TOKEN="'"$BOT_TOKEN"'"
+CHAT_ID='"$ADMIN_ID"'"
+
+TMP_LOG="/tmp/backhaul_scan.log"
+CRITICAL_LOG="/tmp/backhaul_critical.log"
+AFTER_RESTART_LOG="/tmp/backhaul_after_restart.log"
+
+CRITICAL_ERRORS="(failed to dial|control channel has been closed|unauthorized request|connection refused|fatal|panic|segfault)"
+
+journalctl -u backhaul --since "5 minutes ago" --no-pager | tee "$TMP_LOG" | grep -Ei "$CRITICAL_ERRORS" > "$CRITICAL_LOG"
+
+if [ -s "$CRITICAL_LOG" ]; then
+    curl -s -X POST "https://api.telegram.org/bot$BOT_TOKEN/sendMessage" \
+        -d chat_id="$CHAT_ID" \
+        -d text="🚨 *خطای بحرانی* در سرویس بک‌هال روی 🖥️ *$(hostname)*\nدر حال ریستارت..." \
+        -d parse_mode="Markdown"
+
+    systemctl restart backhaul
+
+    journalctl -u backhaul --no-pager -n 100 > "$AFTER_RESTART_LOG"
+
+    curl -s -X POST "https://api.telegram.org/bot$BOT_TOKEN/sendDocument" \
+        -F chat_id="$CHAT_ID" \
+        -F document=@"$AFTER_RESTART_LOG" \
+        -F caption="📄 لاگ بک‌هال بعد از ریستارت ($(date "+%Y-%m-%d %H:%M"))"
+
+elif grep -Ei "warn|timeout|disconnect|retry" "$TMP_LOG" > /dev/null; then
+    LAST_WARN=$(grep -Ei "warn|timeout|disconnect|retry" "$TMP_LOG" | tail -1)
+    curl -s -X POST "https://api.telegram.org/bot$BOT_TOKEN/sendMessage" \
+        -d chat_id="$CHAT_ID" \
+        -d text="⚠️ هشدار سبک در بک‌هال روی $(hostname):\n\n$LAST_WARN"
+fi
+EOM
+
+chmod +x /root/monitor_backhaul.sh
+
+echo "📅 Adding cronjob for monitor_backhaul.sh every 5 minutes..."
+(crontab -l 2>/dev/null | grep -v '/root/monitor_backhaul.sh'; echo "*/5 * * * * /root/monitor_backhaul.sh >/dev/null 2>&1") | crontab -
+
 echo "⚙️ Creating systemd service..."
 cat > /etc/systemd/system/vpn_bot.service <<EOF
 [Unit]
@@ -161,45 +204,6 @@ User=root
 [Install]
 WantedBy=multi-user.target
 EOF
-
-echo "🛡️ Creating backhaul monitor script..."
-cat > /root/monitor_backhaul.sh <<EOF
-#!/bin/bash
-
-BOT_TOKEN="$BOT_TOKEN"
-CHAT_ID=$ADMIN_ID
-
-TMP_LOG="/tmp/backhaul_scan.log"
-AFTER_RESTART_LOG="/tmp/backhaul_after_restart.log"
-CRITICAL_ERRORS="(failed to dial|control channel has been closed|unauthorized request|connection refused|fatal|panic|segfault)"
-
-journalctl -u backhaul --since "5 minutes ago" --no-pager | tee "\$TMP_LOG" | grep -Ei "\$CRITICAL_ERRORS" > /tmp/backhaul_critical.log
-
-if [ -s /tmp/backhaul_critical.log ]; then
-    curl -s -X POST "https://api.telegram.org/bot\$BOT_TOKEN/sendMessage" \
-        -d chat_id="\$CHAT_ID" \
-        -d text="🚨 خطای *بحرانی* در سرویس بک‌هال روی 🖥️ *\$(hostname)*\nدر حال ریستارت..." \
-        -d parse_mode="Markdown"
-
-    systemctl restart backhaul
-    journalctl -u backhaul --no-pager -n 100 > "\$AFTER_RESTART_LOG"
-
-    curl -s -X POST "https://api.telegram.org/bot\$BOT_TOKEN/sendDocument" \
-        -F chat_id="\$CHAT_ID" \
-        -F document=@"\$AFTER_RESTART_LOG" \
-        -F caption="📄 لاگ بک‌هال بعد از ریستارت (\$(date "+%Y-%m-%d %H:%M"))"
-elif grep -Ei "warn|timeout|disconnect|retry" "\$TMP_LOG" > /dev/null; then
-    LAST_WARN=\$(grep -Ei "warn|timeout|disconnect|retry" "\$TMP_LOG" | tail -1)
-    curl -s -X POST "https://api.telegram.org/bot\$BOT_TOKEN/sendMessage" \
-        -d chat_id="\$CHAT_ID" \
-        -d text="⚠️ هشدار سبک در بک‌هال روی \$(hostname):\n\n\$LAST_WARN"
-fi
-EOF
-
-chmod +x /root/monitor_backhaul.sh
-
-echo "🕓 Adding monitor script to crontab..."
-(crontab -l 2>/dev/null; echo "*/5 * * * * /root/monitor_backhaul.sh >/dev/null 2>&1") | crontab -
 
 systemctl daemon-reload
 systemctl enable vpn_bot
