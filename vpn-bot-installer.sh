@@ -107,10 +107,38 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await update.message.reply_text("❓ دستور ناشناخته. لطفاً از دکمه‌ها استفاده کن.")
 
+# تابع جدید برای دستور /checklog
+async def check_log(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.effective_user.id != ADMIN_ID:
+        await update.message.reply_text("⛔ شما اجازه دسترسی ندارید.")
+        return
+
+    CRITICAL_KEYWORDS = "disconnect|fail|timeout|closed|unauthorized"
+    NON_CRITICAL_KEYWORDS = "warn|error"
+
+    result = subprocess.run(['journalctl', '-u', 'backhaul.service', '--since', '5 minutes ago', '--no-pager'], capture_output=True, text=True)
+    logs = result.stdout
+
+    critical_errors = [line for line in logs.splitlines() if any(k.lower() in line.lower() for k in CRITICAL_KEYWORDS.split("|"))]
+    non_critical_errors = [line for line in logs.splitlines() if any(k.lower() in line.lower() for k in NON_CRITICAL_KEYWORDS.split("|"))]
+
+    message = ""
+    if critical_errors:
+        message += "🚨 خطاهای جدی پیدا شدند:\n" + "\n".join(critical_errors[:10]) + "\n\n"
+        message += "برای جلوگیری از اختلال، توصیه به ریستارت بک‌هال است.\n"
+    if non_critical_errors:
+        message += "⚠️ خطاهای کم‌اهمیت‌تر:\n" + "\n".join(non_critical_errors[:10])
+
+    if not message:
+        message = "✅ هیچ خطایی در ۵ دقیقه اخیر پیدا نشد."
+
+    await update.message.reply_text(message)
+
 if __name__ == '__main__':
     app = ApplicationBuilder().token(BOT_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), handle_message))
+    app.add_handler(CommandHandler("checklog", check_log))
     print("🤖 Bot is running...")
     app.run_polling()
 EOF
