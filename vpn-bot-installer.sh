@@ -6,7 +6,7 @@ echo "=============================="
 read -p "install-1 or Uninstall-2 ? (1/2): " ACTION
 
 if [[ "$ACTION" == "2" ]]; then
-    echo "🧹 در حال حذف ربات..."
+    echo "🧹در حال حذف ربات..."
     systemctl stop vpn_bot
     systemctl disable vpn_bot
     rm -f /etc/systemd/system/vpn_bot.service
