@@ -87,7 +87,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"📶 نتیجه پینگ:\n\n{result.stdout[:4000]}")
 
     elif text == "🚨 آخرین خطای بکهال":
-    cmd = ["journalctl", "-u", "backhaul", "--no-pager", "-n", "200", "--since", "2 hours ago"]
+    cmd = ["journalctl", "-u", "backhaul", "--no-pager", "-n", "200", "--since", "2 hours ago"] 
     logs = subprocess.run(cmd, capture_output=True, text=True)
     lines = logs.stdout.splitlines()
     keywords = ["error", "fail", "critical", "unauthorized", "refused", "disconnect", "closed", "timeout"]
