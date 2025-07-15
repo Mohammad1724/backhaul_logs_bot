@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "MOHAMMAD REZA MORADI"
+echo "👑MOHAMMAD REZA MORADI"
 echo "==============================="
 echo " VPN Bot Installation Manager"
 echo "==============================="
