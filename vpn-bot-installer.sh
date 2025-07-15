@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "🐉MOHAMMAD REZA MORADI"
+echo "👑MOHAMMAD REZA MORADI"
 echo "==============================="
 echo " VPN Bot Installation Manager"
 echo "==============================="
@@ -40,6 +40,7 @@ cat > /root/vpn_bot.py <<EOF
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
 import subprocess
+import re
 
 BOT_TOKEN = "$BOT_TOKEN"
 ADMIN_ID = $ADMIN_ID
@@ -87,17 +88,16 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"📶 نتیجه پینگ:\n\n{result.stdout[:4000]}")
 
     elif text == "🚨 آخرین خطای بکهال":
-    cmd = ["journalctl", "-u", "backhaul", "--no-pager", "-n", "200", "--since", "2 hours ago"]
-    try:
-        output = subprocess.check_output(cmd, text=True)
-        import re
-        errors = re.findall(r".*(error|fail|critical|unauthorized|refused|disconnect).*", output, re.IGNORECASE)
-        if errors:
-            await update.message.reply_text(f"🚨 آخرین خطاها:\n\n" + "\n".join(errors[-10:]))
-        else:
-            await update.message.reply_text("✅ هیچ خطایی در دو ساعت گذشته پیدا نشد.")
-    except Exception as e:
-        await update.message.reply_text(f"❌ خطا در دریافت لاگ‌ها: {e}")
+        cmd = ["journalctl", "-u", "backhaul", "--no-pager", "-n", "200", "--since", "2 hours ago"]
+        try:
+            output = subprocess.check_output(cmd, text=True)
+            errors = re.findall(r".*(error|fail|critical|unauthorized|refused|disconnect).*", output, re.IGNORECASE)
+            if errors:
+                await update.message.reply_text(f"🚨 آخرین خطاها:\n\n" + "\n".join(errors[-10:]))
+            else:
+                await update.message.reply_text("✅ هیچ خطایی در دو ساعت گذشته پیدا نشد.")
+        except Exception as e:
+            await update.message.reply_text(f"❌ خطا در دریافت لاگ‌ها: {e}")
 
     elif text == "❌ حذف ربات":
         await update.message.reply_text("♻️ ربات در حال حذف از سیستم است...")
@@ -112,7 +112,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await update.message.reply_text("❓ دستور ناشناخته. لطفاً از دکمه‌ها استفاده کن.")
 
-# تابع جدید برای دستور /checklog
 async def check_log(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != ADMIN_ID:
         await update.message.reply_text("⛔ شما اجازه دسترسی ندارید.")
