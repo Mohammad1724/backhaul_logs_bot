@@ -87,15 +87,17 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"📶 نتیجه پینگ:\n\n{result.stdout[:4000]}")
 
     elif text == "🚨 آخرین خطای بکهال":
-    cmd = ["journalctl", "-u", "backhaul", "--no-pager", "-n", "200", "--since", "2 hours ago"] 
-    logs = subprocess.run(cmd, capture_output=True, text=True)
-    lines = logs.stdout.splitlines()
-    keywords = ["error", "fail", "critical", "unauthorized", "refused", "disconnect", "closed", "timeout"]
-    error_lines = [line for line in lines if any(word in line.lower() for word in keywords)]
-    if error_lines:
-        await update.message.reply_text(f"🚨 آخرین خطای بک‌هال:\n\n{error_lines[-1]}")
-    else:
-        await update.message.reply_text("✅ هیچ خطای قابل توجهی در ۲ ساعت اخیر یافت نشد.")
+    cmd = ["journalctl", "-u", "backhaul", "--no-pager", "-n", "200", "--since", "2 hours ago"]
+    try:
+        output = subprocess.check_output(cmd, text=True)
+        import re
+        errors = re.findall(r".*(error|fail|critical|unauthorized|refused|disconnect).*", output, re.IGNORECASE)
+        if errors:
+            await update.message.reply_text(f"🚨 آخرین خطاها:\n\n" + "\n".join(errors[-10:]))
+        else:
+            await update.message.reply_text("✅ هیچ خطایی در دو ساعت گذشته پیدا نشد.")
+    except Exception as e:
+        await update.message.reply_text(f"❌ خطا در دریافت لاگ‌ها: {e}")
 
     elif text == "❌ حذف ربات":
         await update.message.reply_text("♻️ ربات در حال حذف از سیستم است...")
